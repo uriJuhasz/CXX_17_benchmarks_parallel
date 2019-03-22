@@ -69,6 +69,16 @@ namespace std
     };
 }
 
+template<class F, class P0, class P1> void measureAndPrint(P0 p0, F f, P1 p1)
+{
+    p0();
+    const auto startTime = chrono::high_resolution_clock::now();
+    f();
+    const auto endTime = chrono::high_resolution_clock::now();
+    const auto msTime = chrono::duration_cast<chrono::milliseconds>(endTime - startTime).count();
+    p1(msTime);
+}
+
 int main()
 {
     cout << "Start" << endl;
@@ -80,10 +90,21 @@ int main()
         
     cout << " Measuring lookups from " << typeid(m).name() << endl;
 
-    static const int maxNumReads = 1000000000;
+    static const int maxNumReads = 100000000;
     float x = 0.0f;
     for (auto numReads = 1 << 16; numReads < maxNumReads; numReads <<= 1)
     {
+        measureAndPrint(
+            [&numReads]() {cout << " " << setw(10) << numReads << " : "; },
+            [&x,&m,&numReads]()
+            {for (int i = 0; i < numReads; ++i)
+            x += m[(i * 17) % numElements]; },
+            [&numReads](const long long msTime) {
+                const auto plTime = static_cast<float>(numReads) * 1000.0f / msTime;
+                cout << setw(10) << msTime << "ms - " << fixed << setprecision(1) << setw(10) << plTime << "lu/s" << endl; 
+            }
+        );
+        /*
         cout << " " << setw(10) << numReads << " : ";
         const auto startTime = chrono::high_resolution_clock::now();
         for (int i = 0; i < numReads; ++i)
@@ -92,6 +113,7 @@ int main()
         const auto msTime = chrono::duration_cast<chrono::milliseconds>(endTime - startTime).count();
         const auto plTime = static_cast<float>(numReads) * 1000.0f / msTime;
         cout << setw(10) <<  msTime << "ms - " << fixed << setprecision(1) << setw(10) << plTime << "lu/s" << endl;
+        */
     }
 
     cout << " Measuring parallel lookups from " << typeid(m).name() << endl;
