@@ -90,7 +90,7 @@ int main()
         
     cout << " Measuring lookups from " << typeid(m).name() << endl;
 
-    static const int maxNumReads = 100000000;
+    static const int maxNumReads = 1000000000;
     float x = 0.0f;
     for (auto numReads = 1 << 16; numReads < maxNumReads; numReads <<= 1)
     {
